@@ -213,7 +213,6 @@ def CheckAvailability(driver, url, start_date, end_date):
                 attrs={'class' : "camp-sortable-column-header"}
                 )]
     #only unique names
-    # colname = set(colname)
     tmp = list(colname)
     colname = list()
     for c in tmp:
@@ -231,64 +230,48 @@ def CheckAvailability(driver, url, start_date, end_date):
                 attrs={'class' : "site-id-wrap camping-site-name-cell"}
                 )]
 
-    # print(rowname)
-    # print(colname)
+
 
 
 
 
     #GET BODY OF TABLE
 
-    # rows = table.findAll(lambda tag: tag.name=='tr')
-
-    # nrow = len(rows)
-    # ncol = len( rows[0].find_all('td') )
-    # df = pd.DataFrame(columns=range(0,ncol), index = range(nrow))
-
-    # tab = []
-
-    # row_marker = 0
-    # for row in table.find_all('tr'):
-    #     tab.append([])
-    #     column_marker = 0
-    #     columns = row.find_all('td')
-    #     for column in columns:
-    #         # df.iat[row_marker,column_marker] = column.get_text()
-    #         tab[row_marker,column_marker] = column.get_text()
-    #         column_marker += 1
-    #     row_marker += 1
-
-    # print(tab)
-
-
-    # print(pd.DataFrame(tab))
-
 
     data = []
+    #get just the body of the table
     table_body = table.find('tbody')
+    #split by rows
     rows = table_body.find_all('tr')
     for row in rows:
+        #split by columns
         cols = row.find_all('td')
         cols = [ele.text.strip() for ele in cols] #we just want the cell text
         data.append([ele for ele in cols if ele]) # Get rid of empty values
+        # for col in cols:
+        #     #we just want the cell text
+        #     ele = col.text.strip()
+        #     # Get rid of empty values
+        #     if ele:
+        #         data.append(ele)
+
+    #PREPEND COLUMN FOR CAMPSITE NAME
+    for i, row in enumerate(data):
+        #for each row, add the rowname (campsite name) to the front
+        data[i].insert(0, rowname[i])
 
 
-    df = pd.DataFrame(data)
+
+
+    #Finalized table, with column headers
+    df = pd.DataFrame(data, columns=colname)
     print(df)
-    print(colname)
-    print(rowname)
-
-
-    df = pd.DataFrame(data, columns=colname, index=rowname)
-    print(df)
 
 
 
+    #DETERMINE IF ANY (DESIRED) SITES ARE AVAILABLE FOR DESIRED DATE
 
 
-
-    #determine site availability
-        #if it has a book-now-button
 
 
 
