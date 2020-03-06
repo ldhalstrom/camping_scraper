@@ -13,6 +13,8 @@ https://towardsdatascience.com/web-scraping-basics-selenium-and-beautiful-soup-a
 https://github.com/streeter/recreation-gov-campsite-checker
     Uses actual recreation.gov api
     2019
+https://towardsdatascience.com/web-scraping-using-selenium-and-beautifulsoup-99195cd70a58
+    more detail on selenium and beautifulsoup
 """
 
 
@@ -20,6 +22,7 @@ https://github.com/streeter/recreation-gov-campsite-checker
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
 from random import randint
 # import datetime
 from datetime import datetime, timedelta
@@ -28,7 +31,7 @@ import time
 import pandas as pd
 
 
-def time_delay(tmin=3, tmax=6):
+def time_delay(tmin=1, tmax=2):
     """ Add a random time delay to act more like a human, avoid getting banned
     Randomly choose an integer amount of sections between the given range
     tmin/tmax: minimum/maximum amoun of seconds in delay
@@ -172,6 +175,29 @@ def CheckAvailability(driver, url, start_date, end_date):
     # selectElem.submit()
     # time_delay()
 
+    #NAVIGATE TO AVAILABILITY PAGE
+    #Get "View by Availability" button element
+    selectElem=driver.find_element_by_xpath('//*[@id="campground-view-by-avail"]')
+    #click it
+    selectElem.click()
+
+    # #wait for everything on the page to load
+    # element = WebDriverWait(driver, 30).until(lambda x: x.find_element_by_id('iframe_container'))
+    time_delay()
+
+    #GET HTML SOUP FROM PAGE
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    # print(soup.prettify())
+
+    #get availability table
+    table = soup.find(lambda tag: tag.name=='table' and tag.has_attr('id') and tag['id']=="availability-table")
+    rows = table.findAll(lambda tag: tag.name=='tr')
+
+    print(rows)
+
+
+    #determine site availability
+        #if it has a book-now-button
 
 
 
@@ -243,8 +269,8 @@ def main(start_date, length_stay):
 
     CheckAvailability(driver, url, start_date, end_date)
 
-
-
+    # #close browser
+    # driver.quit()
 
 if __name__ == "__main__":
 
