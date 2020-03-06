@@ -149,15 +149,28 @@ def CheckAvailability(driver, url, start_date, end_date):
     driver.get(url)
     time_delay()
 
-    #Enter Start Date
+    #ENTER START DATE
         #right click on "Check In" web dialog and select "Inspect"
+    #Find Start Date element by xpath with startDate keyword
     selectElem=driver.find_element_by_xpath('//*[@id="startDate"]')
+    #clear current value
     selectElem.clear()
+    #send desired start date value
     selectElem.send_keys(start_date.strftime(FMT))
     time_delay()
+    # #submit?
+    # selectElem.submit()
+    # time_delay()
 
-    selectElem.submit()
+
+    #ENTER END DATE
+        #same process as start date
+    selectElem=driver.find_element_by_xpath('//*[@id="endDate"]')
+    selectElem.clear()
+    selectElem.send_keys(end_date.strftime(FMT))
     time_delay()
+    # selectElem.submit()
+    # time_delay()
 
 
 
@@ -184,6 +197,7 @@ def CheckAvailability(driver, url, start_date, end_date):
         time.sleep(time_delay)
         selectElem.submit()
         time.sleep(time_delay)
+
         site_data = driver.find_elements_by_class_name('searchSummary')
         time.sleep(time_delay)
 
