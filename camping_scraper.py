@@ -186,14 +186,101 @@ def CheckAvailability(driver, url, start_date, end_date):
     time_delay()
 
     #GET HTML SOUP FROM PAGE
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    # soup = BeautifulSoup(driver.page_source, 'html.parser')
+    soup = BeautifulSoup(driver.page_source, 'lxml')
+
     # print(soup.prettify())
 
     #get availability table
     table = soup.find(lambda tag: tag.name=='table' and tag.has_attr('id') and tag['id']=="availability-table")
+
+    # magic = tableDataText(table)
+    # print(magic)
+
+    # return
+
+
     rows = table.findAll(lambda tag: tag.name=='tr')
 
-    print(rows)
+    nrow = len(rows)
+    ncol = len( rows[0].find_all('td') )
+    # df = pd.DataFrame(columns=range(0,ncol), index = range(nrow))
+
+    # tab = []
+
+    # row_marker = 0
+    # for row in table.find_all('tr'):
+    #     tab.append([])
+    #     column_marker = 0
+    #     columns = row.find_all('td')
+    #     for column in columns:
+    #         # df.iat[row_marker,column_marker] = column.get_text()
+    #         tab[row_marker,column_marker] = column.get_text()
+    #         column_marker += 1
+    #     row_marker += 1
+
+    # print(tab)
+
+
+    # print(pd.DataFrame(tab))
+
+
+    data = []
+    # table = soup.find('table', attrs={'class':'lineItemsTable'})
+    table_body = table.find('tbody')
+
+    rows = table_body.find_all('tr')
+    for row in rows:
+        cols = row.find_all('td')
+        cols = [ele.text.strip() for ele in cols]
+        data.append([ele for ele in cols if ele]) # Get rid of empty values
+
+
+    print(data)
+
+    df = pd.DataFrame(data)
+    print(df)
+
+
+
+    #get column headers
+        #find by right-click -> Inspect on web table cell with column header
+    # for tx in soup.find_all('th',
+    #         attrs={'class' : "camp-sortable-column-header"}
+    #         ):
+    #     print(tx.text.strip())
+
+    colname = [tx.text.strip() for tx in soup.find_all('th',
+                attrs={'class' : "camp-sortable-column-header"}
+                )]
+
+
+    #get row headers
+        #find by right-click -> Inspect on web table cell with campsite name in it
+        #find 'th' for header objects
+        #class identifies specific object for row headers
+        #stripped text is the text in the cell
+    # rownames = []
+    # for tx in soup.find_all('th',
+    #         attrs={'class' : "site-id-wrap camping-site-name-cell"}
+    #         ):
+    #     print(tx.text.strip())
+
+    rowname = [tx.text.strip() for tx in soup.find_all('th',
+                attrs={'class' : "site-id-wrap camping-site-name-cell"}
+                )]
+
+    print(rowname)
+    print(colname)
+
+    # table = soup.findAll('table')
+    # # table_rows = table.findAll('tr')
+    # for t in table:
+    #     print(t)
+
+
+
+
 
 
     #determine site availability
@@ -239,7 +326,23 @@ def CheckAvailability(driver, url, start_date, end_date):
 
 
 
-
+def tableDataText(table):
+    """Parses a html segment started with tag <table> followed
+    by multiple <tr> (table rows) and inner <td> (table data) tags.
+    It returns a list of rows with inner columns.
+    Accepts only one <th> (table header/data) in the first row.
+    """
+    def rowgetDataText(tr, coltag='td'): # td (data) or th (header)
+        return [td.get_text(strip=True) for td in tr.find_all(coltag)]
+    rows = []
+    trs = table.find_all('tr')
+    headerow = rowgetDataText(trs[0], 'th')
+    if headerow: # if there is a header row include first
+        rows.append(headerow)
+        trs = trs[1:]
+    for tr in trs: # for every table row
+        rows.append(rowgetDataText(tr, 'td') ) # data row
+    return rows
 
 
 
