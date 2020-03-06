@@ -185,25 +185,64 @@ def CheckAvailability(driver, url, start_date, end_date):
     # element = WebDriverWait(driver, 30).until(lambda x: x.find_element_by_id('iframe_container'))
     time_delay()
 
-    #GET HTML SOUP FROM PAGE
+
+
+
+
+    ####################################
+    #GET HTML SOUP FROM WEBPAGE
     # soup = BeautifulSoup(driver.page_source, 'html.parser')
     soup = BeautifulSoup(driver.page_source, 'lxml')
 
     # print(soup.prettify())
 
-    #get availability table
+    #get campsite availability table
     table = soup.find(lambda tag: tag.name=='table' and tag.has_attr('id') and tag['id']=="availability-table")
 
-    # magic = tableDataText(table)
-    # print(magic)
-
-    # return
 
 
-    rows = table.findAll(lambda tag: tag.name=='tr')
 
-    nrow = len(rows)
-    ncol = len( rows[0].find_all('td') )
+    #GET HEADERS FOR HTML TABLE (MAKE THIS OBJECT ORIENTED IN FUTURE)*****************
+
+    #get column headers
+        #find by right-click -> Inspect on web table cell with column header
+        #find 'th' for header objects
+        #class identifies specific object for col headers
+        #stripped text is the text in the cell
+    colname = [tx.text.strip() for tx in soup.find_all('th',
+                attrs={'class' : "camp-sortable-column-header"}
+                )]
+    #only unique names
+    # colname = set(colname)
+    tmp = list(colname)
+    colname = list()
+    for c in tmp:
+        if c not in colname:
+            #only add current value if it is not in list already
+            colname.append(c)
+
+
+    #get row headers
+        #find by right-click -> Inspect on web table cell with campsite name in it
+        #find 'th' for header objects
+        #class identifies specific object for row headers
+        #stripped text is the text in the cell
+    rowname = [tx.text.strip() for tx in soup.find_all('th',
+                attrs={'class' : "site-id-wrap camping-site-name-cell"}
+                )]
+
+    # print(rowname)
+    # print(colname)
+
+
+
+
+    #GET BODY OF TABLE
+
+    # rows = table.findAll(lambda tag: tag.name=='tr')
+
+    # nrow = len(rows)
+    # ncol = len( rows[0].find_all('td') )
     # df = pd.DataFrame(columns=range(0,ncol), index = range(nrow))
 
     # tab = []
@@ -226,57 +265,22 @@ def CheckAvailability(driver, url, start_date, end_date):
 
 
     data = []
-    # table = soup.find('table', attrs={'class':'lineItemsTable'})
     table_body = table.find('tbody')
-
     rows = table_body.find_all('tr')
     for row in rows:
         cols = row.find_all('td')
-        cols = [ele.text.strip() for ele in cols]
+        cols = [ele.text.strip() for ele in cols] #we just want the cell text
         data.append([ele for ele in cols if ele]) # Get rid of empty values
 
 
-    print(data)
-
     df = pd.DataFrame(data)
     print(df)
-
-
-
-    #get column headers
-        #find by right-click -> Inspect on web table cell with column header
-    # for tx in soup.find_all('th',
-    #         attrs={'class' : "camp-sortable-column-header"}
-    #         ):
-    #     print(tx.text.strip())
-
-    colname = [tx.text.strip() for tx in soup.find_all('th',
-                attrs={'class' : "camp-sortable-column-header"}
-                )]
-
-
-    #get row headers
-        #find by right-click -> Inspect on web table cell with campsite name in it
-        #find 'th' for header objects
-        #class identifies specific object for row headers
-        #stripped text is the text in the cell
-    # rownames = []
-    # for tx in soup.find_all('th',
-    #         attrs={'class' : "site-id-wrap camping-site-name-cell"}
-    #         ):
-    #     print(tx.text.strip())
-
-    rowname = [tx.text.strip() for tx in soup.find_all('th',
-                attrs={'class' : "site-id-wrap camping-site-name-cell"}
-                )]
-
-    print(rowname)
     print(colname)
+    print(rowname)
 
-    # table = soup.findAll('table')
-    # # table_rows = table.findAll('tr')
-    # for t in table:
-    #     print(t)
+
+    df = pd.DataFrame(data, columns=colname, index=rowname)
+    print(df)
 
 
 
