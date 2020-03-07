@@ -139,7 +139,8 @@ def GetStayInterval(start, length, FMT="%Y-%m-%d"):
 #SEARCH FOR CAMPSITE AVAILABILITY
     #
 
-def CheckAvailability(driver, url, start_date, end_date):
+def CheckAvailability(driver, url, start_date, end_date,
+                        preferred=None, blacklist=None):
     """ Check if campsite(s) are available
     driver --> web browser driver
     url    --> url to desired campground
@@ -260,12 +261,26 @@ def CheckAvailability(driver, url, start_date, end_date):
         #for each row, add the rowname (campsite name) to the front
         data[i].insert(0, rowname[i])
 
-
-
-
     #Finalized table, with column headers
-    df = pd.DataFrame(data, columns=colname)
-    print(df)
+    dat = pd.DataFrame(data, columns=colname)
+
+
+
+
+
+    #DOWNSELECT TABLE TO DESIRED STAY INTERVAL
+        #1st col (0) is site name, 2nd col is "loop",
+        #consequtive cols are increasing days, starting with start_date
+    df = dat.iloc[:,0:length_stay+2] #plus 2 because extra col and zero indexing
+
+    #column names that correspond to days of stay
+    depcols = colname[2:]
+    depcols = df.columns.values[2:]
+
+    print('NEED TO TEST THIS FOR ANOTHER CAMPSITE*******************************')
+
+
+
 
 
 
@@ -274,62 +289,39 @@ def CheckAvailability(driver, url, start_date, end_date):
 
 
 
-
-    return
-
-    camping_availability_dictionary={}
-    for week in range(0,how_many_weeks_to_check):
-        driver.get(url)
-        time.sleep(time_delay)
-
-        start_date = current_time + datetime.timedelta(days=week*7) + datetime.timedelta(days=weeks_from_now_to_look*7)
-        end_date = start_date + datetime.timedelta(days=nights_stay)
-        selectElem=driver.find_element_by_xpath('//*[@id="arrivalDate"]')
-        selectElem.clear()
-        selectElem.send_keys(start_date.strftime("%a %b %d %Y"))
-        time.sleep(time_delay)
-        selectElem.submit()
-        time.sleep(time_delay)
-
-        selectElem=driver.find_element_by_xpath('//*[@id="departureDate"]')
-        selectElem.clear()
-        selectElem.send_keys(end_date.strftime("%a %b %d %Y"))
-        time.sleep(time_delay)
-        selectElem.submit()
-        time.sleep(time_delay)
-
-        site_data = driver.find_elements_by_class_name('searchSummary')
-        time.sleep(time_delay)
-
-        property_data = []
-    for i in site_data:
-        if len(i.text) != 0:
-             property_data.append(i.text)
-
-        camping_availability_dictionary[start_date.strftime("%a %b %d %Y") + ' to ' + end_date.strftime("%a %b %d %Y")] = property_data
-
-        time.sleep(time_delay)
+    print(df)
 
 
 
+    if preferred is not None:
+        #only check for availability in supplied sites
+        print('Checking preferred sites only')
 
-def tableDataText(table):
-    """Parses a html segment started with tag <table> followed
-    by multiple <tr> (table rows) and inner <td> (table data) tags.
-    It returns a list of rows with inner columns.
-    Accepts only one <th> (table header/data) in the first row.
-    """
-    def rowgetDataText(tr, coltag='td'): # td (data) or th (header)
-        return [td.get_text(strip=True) for td in tr.find_all(coltag)]
-    rows = []
-    trs = table.find_all('tr')
-    headerow = rowgetDataText(trs[0], 'th')
-    if headerow: # if there is a header row include first
-        rows.append(headerow)
-        trs = trs[1:]
-    for tr in trs: # for every table row
-        rows.append(rowgetDataText(tr, 'td') ) # data row
-    return rows
+    elif blacklist is not None:
+        #preferred is None, so any available except blacklist
+        print('Checking all sites except:')
+        for bl in blacklist:
+            print('    {}'.format(bl))
+
+        #drop any row that has a reservation in stay interval
+        for c in depcols:
+            df = df.loc[df[c] != 'R']
+
+        #drop any remaining row that is blacklisted
+        for i, row in df.iterrows():
+            for bl in blacklist:
+                if bl in row['Sites']:
+                    df = df.drop(i)
+
+
+        print(df)
+
+    else:
+        #any available
+        print('Checking all sites')
+
+        # df = df.iloc[:,2 != 'R']
+
 
 
 
@@ -348,7 +340,7 @@ def tableDataText(table):
 
 
 
-def main(start_date, length_stay):
+def main(start_date, length_stay, blacklist=None):
 
     #Get Stay interval
     start_date, end_date = GetStayInterval(start_date, length_stay)
@@ -357,10 +349,12 @@ def main(start_date, length_stay):
     driver = GetWebDriver_Chrome(headless=False)
 
 
-    CheckAvailability(driver, url, start_date, end_date)
+    CheckAvailability(driver, url, start_date, end_date,
+                        blacklist=blacklist)
 
     # #close browser
     # driver.quit()
+    print('NOT CLOSING BROWSER AT END FOR DEBUGGING')
 
 if __name__ == "__main__":
 
@@ -373,12 +367,18 @@ if __name__ == "__main__":
     length_stay = 2
 
 
+    #text keywords of site names I dont want
+    Blacklist = [
+                    'BOAT A',
+                    'BOAT B',
+                    'MARSHALL BEACH GROUP',
+                    'TOMALES BEACH GROUP',
+                ]
 
 
 
 
-
-    main(start_date, length_stay)
+    main(start_date=start_date, length_stay=length_stay, blacklist=Blacklist)
 
 
 
