@@ -74,17 +74,19 @@ def GetWebDriver_Chrome(chromedriver="/Applications/chromedriver", headless=True
 
 
 
-url = 'https://www.recreation.gov/camping/aspen-hollow-group/r/campgroundDetails.do?contractCode=NRSO&parkId=71546'
+old_url = 'https://www.recreation.gov/camping/aspen-hollow-group/r/campgroundDetails.do?contractCode=NRSO&parkId=71546'
 
 
 #recreation.gov campground IDs
 
 campIDs = {
-            'pointreyes' : 233359,
+            'pointreyes'       : 233359,
+            'lassen_manzanita' : 234039
             }
 
+
 #Point Reyes
-url = 'https://www.recreation.gov/camping/campgrounds/233359'
+old_url = 'https://www.recreation.gov/camping/campgrounds/233359'
 
 urls = {
     'recreation.gov' : 'https://www.recreation.gov/camping/campgrounds',
@@ -274,7 +276,6 @@ def CheckAvailability(driver, url, start_date, end_date,
     df = dat.iloc[:,0:length_stay+2] #plus 2 because extra col and zero indexing
 
     #column names that correspond to days of stay
-    depcols = colname[2:]
     depcols = df.columns.values[2:]
 
     print('NEED TO TEST THIS FOR ANOTHER CAMPSITE*******************************')
@@ -291,6 +292,9 @@ def CheckAvailability(driver, url, start_date, end_date,
 
     print(df)
 
+    #drop any row that has a reservation in stay interval
+    for c in depcols:
+        df = df.loc[(df[c] != 'R') & (df[c] != 'X')]
 
 
     if preferred is not None:
@@ -303,27 +307,29 @@ def CheckAvailability(driver, url, start_date, end_date,
         for bl in blacklist:
             print('    {}'.format(bl))
 
-        #drop any row that has a reservation in stay interval
-        for c in depcols:
-            df = df.loc[df[c] != 'R']
-
         #drop any remaining row that is blacklisted
         for i, row in df.iterrows():
             for bl in blacklist:
                 if bl in row['Sites']:
                     df = df.drop(i)
 
-
-        print(df)
-
     else:
-        #any available
+        #any available (already done)
         print('Checking all sites')
 
-        # df = df.iloc[:,2 != 'R']
+    return df
 
 
+def PrintAvailableSites(df):
+    """
+    """
 
+    if df.empty:
+        print("No available sites :'(")
+    else:
+        print('Available sites:')
+        # for i, row in df.iterrows():
+        print(df['Sites'])
 
 
 
@@ -340,7 +346,10 @@ def CheckAvailability(driver, url, start_date, end_date,
 
 
 
-def main(start_date, length_stay, blacklist=None):
+
+
+
+def main(start_date, length_stay, url, preferred=None, blacklist=None):
 
     #Get Stay interval
     start_date, end_date = GetStayInterval(start_date, length_stay)
@@ -349,8 +358,10 @@ def main(start_date, length_stay, blacklist=None):
     driver = GetWebDriver_Chrome(headless=False)
 
 
-    CheckAvailability(driver, url, start_date, end_date,
-                        blacklist=blacklist)
+    df = CheckAvailability(driver, url, start_date, end_date,
+                            preferred=preferred, blacklist=blacklist)
+
+    PrintAvailableSites(df)
 
     # #close browser
     # driver.quit()
@@ -362,23 +373,33 @@ if __name__ == "__main__":
     #SPECIFY CAMPING INTERVAL
     #start date and length of stay (nights)
 
-    #inputs
-    start_date = '2020-03-20'
+    # #inputs
+    # start_date = '2020-03-20'
+    # length_stay = 2
+    # URL = '{}/{}'.format(urls['recreation.gov'], campIDs['pointreyes'])
+
+    # #text keywords of site names I dont want
+    # Blacklist = [
+    #                 'BOAT A',
+    #                 'BOAT B',
+    #                 'MARSHALL BEACH GROUP',
+    #                 'TOMALES BEACH GROUP',
+    #             ]
+
+    # main(start_date=start_date, length_stay=length_stay, url=URL, blacklist=Blacklist)
+
+
+    start_date = '2020-07-03'
     length_stay = 2
-
-
-    #text keywords of site names I dont want
-    Blacklist = [
-                    'BOAT A',
-                    'BOAT B',
-                    'MARSHALL BEACH GROUP',
-                    'TOMALES BEACH GROUP',
-                ]
+    URL = '{}/{}'.format(urls['recreation.gov'], campIDs['lassen_manzanita'])
 
 
 
 
-    main(start_date=start_date, length_stay=length_stay, blacklist=Blacklist)
+
+
+
+    main(start_date=start_date, length_stay=length_stay, url=URL)
 
 
 
