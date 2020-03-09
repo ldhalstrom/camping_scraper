@@ -326,10 +326,14 @@ def PrintAvailableSites(df):
 
     if df.empty:
         print("No available sites :'(")
+        availability = False
     else:
         print('Available sites:')
         # for i, row in df.iterrows():
         print(df['Sites'])
+        availability = True
+
+    return availability
 
 
 
@@ -349,57 +353,65 @@ def PrintAvailableSites(df):
 
 
 
-def main(start_date, length_stay, url, preferred=None, blacklist=None):
+def main(start_date, length_stay, url,
+            preferred=None, blacklist=None, debug=False):
 
     #Get Stay interval
     start_date, end_date = GetStayInterval(start_date, length_stay)
 
     #Get driver for web browser
-    driver = GetWebDriver_Chrome(headless=False)
+    if debug:
+        headless = False
+    else:
+        headless = True
+    driver = GetWebDriver_Chrome(headless=headless)
 
 
     df = CheckAvailability(driver, url, start_date, end_date,
                             preferred=preferred, blacklist=blacklist)
 
-    PrintAvailableSites(df)
+    available = PrintAvailableSites(df)
 
-    # #close browser
-    # driver.quit()
-    print('NOT CLOSING BROWSER AT END FOR DEBUGGING')
+    #close browser
+    if debug:
+        print('NOT CLOSING BROWSER AT END FOR DEBUGGING')
+    else:
+        driver.quit()
+
 
 if __name__ == "__main__":
 
 
+    DEBUG = False
+
     #SPECIFY CAMPING INTERVAL
     #start date and length of stay (nights)
 
-    # #inputs
-    # start_date = '2020-03-20'
-    # length_stay = 2
-    # URL = '{}/{}'.format(urls['recreation.gov'], campIDs['pointreyes'])
 
-    # #text keywords of site names I dont want
-    # Blacklist = [
-    #                 'BOAT A',
-    #                 'BOAT B',
-    #                 'MARSHALL BEACH GROUP',
-    #                 'TOMALES BEACH GROUP',
-    #             ]
-
-    # main(start_date=start_date, length_stay=length_stay, url=URL, blacklist=Blacklist)
-
-
-    start_date = '2020-07-03'
+    #POINT REYES
+    #inputs
+    start_date = '2020-03-20'
     length_stay = 2
-    URL = '{}/{}'.format(urls['recreation.gov'], campIDs['lassen_manzanita'])
+    URL = '{}/{}'.format(urls['recreation.gov'], campIDs['pointreyes'])
+
+    #text keywords of site names I dont want
+    Blacklist = [
+                    'BOAT A',
+                    'BOAT B',
+                    'MARSHALL BEACH GROUP',
+                    'TOMALES BEACH GROUP',
+                ]
+
+    main(start_date=start_date, length_stay=length_stay, url=URL,
+            blacklist=Blacklist, debug=DEBUG)
 
 
+    # #LASSEN MANSANITA
+    # start_date = '2020-07-03'
+    # length_stay = 2
+    # URL = '{}/{}'.format(urls['recreation.gov'], campIDs['lassen_manzanita'])
 
-
-
-
-
-    main(start_date=start_date, length_stay=length_stay, url=URL)
+    # main(start_date=start_date, length_stay=length_stay, url=URL)
 
 
 

@@ -5,6 +5,11 @@
     - needs a driver program for your chosen webbrowser (e.g. chromedriver or geckodriver)
     - need to download this file for your machine
 
+## Testing
+- recreation.gov
+    - point reyes 3/6/2020
+    - lassen mansanita 3/6/2020
+
 
 ## TO DO
 - Scraper for reservations.gov
