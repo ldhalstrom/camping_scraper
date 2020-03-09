@@ -31,6 +31,10 @@ import time
 import pandas as pd
 
 
+#script to send email notifications
+import notify
+
+
 def time_delay(tmin=1, tmax=2):
     """ Add a random time delay to act more like a human, avoid getting banned
     Randomly choose an integer amount of sections between the given range
@@ -142,7 +146,7 @@ def GetStayInterval(start, length, FMT="%Y-%m-%d"):
     #
 
 def CheckAvailability(driver, url, start_date, end_date,
-                        preferred=None, blacklist=None):
+                        preferred=None, blacklist=None, debug=False):
     """ Check if campsite(s) are available
     driver --> web browser driver
     url    --> url to desired campground
@@ -289,8 +293,8 @@ def CheckAvailability(driver, url, start_date, end_date,
 
 
 
-
-    print(df)
+    if debug:
+        print(df)
 
     #drop any row that has a reservation in stay interval
     for c in depcols:
@@ -336,6 +340,127 @@ def PrintAvailableSites(df):
     return availability
 
 
+def ReportAvailableSites(df):
+    """
+    """
+
+    report = ''
+
+    if df.empty:
+        availability = False
+
+        report += "No available sites :'(\n"
+
+    else:
+        availability = True
+
+        report += 'Available sites!!!:\n'
+        for i, row in df.iterrows():
+            report += '    {}\n'.format(row['Sites'])
+
+
+    return report, availability
+
+
+
+def MakeSendAvailabilityReport(report, campground):
+
+
+    #check if email is paused
+    stillsend = CheckEmailPause()
+    if not stillsend:
+        return
+
+
+    #get current time, ignore millisecond
+    now = datetime.now().replace(microsecond=0)
+    now.strftime("%Y-%m-%d %H:%M:%S")
+    #make email subject
+    subject = 'Available Campsite: {} {}'.format(campground, now)
+    #Send Email
+    notify.main(subject, report)
+
+    #ADD INFORMATION ABOUT *************************************************************************
+        #STAY INTERVAL
+        #BLACKLIST CAMPSITES
+
+
+    #NEED A WAY TO PAUSE EMAILS IF A HIT IS FOUND*****************************************************
+
+
+def CheckEmailPause():
+    """ Pause emails if notification has already been sent so I dont get spammed
+    """
+
+    def Touch(filename):
+        open(filename, 'a').close()
+
+    checkfile = 'pause.info'
+    send_this_email = False
+
+    if not os.path.exists(checkfile):
+        #no email has been sent
+        send_this_email = True
+
+        # s = pd.Series({'email_pause' : True})
+        # s.to_csv(checkfile, sep=' ')
+        Touch(checkfile)
+        return send_this_email
+    else:
+        return send_this_email
+
+    # #otherwise, read the file
+    # s = pd.read_csv(checkfile, sep=' ')
+
+    # if s['email_pause']:
+    #     #emails are paused, dont send
+    #     return send_this_email
+    # else:
+    #     #send the email and dont send any afterwards
+    #     send_this_email = True
+
+    #     #pause all following emails
+    #     s['email_pause'] = True
+    #     s.to_csv(checkfile, sep=' ')
+
+    #     return send_this_email
+
+
+
+def CheckEmailPause_MoreFunctionality():
+    """ Pause emails if notification has already been sent so I dont get spammed
+    """
+
+    checkfile = 'pause.info'
+    send_this_email = False
+
+    if not os.path.exists(checkfile):
+        #no email has been sent
+        send_this_email = True
+
+        s = pd.Series({'email_pause' : True})
+        s.to_csv(checkfile, sep=' ')
+        return send_this_email
+
+    #otherwise, read the file
+    s = pd.read_csv(checkfile, sep=' ')
+
+    if s['email_pause']:
+        #emails are paused, dont send
+        return send_this_email
+    else:
+        #send the email and dont send any afterwards
+        send_this_email = True
+
+        #pause all following emails
+        s['email_pause'] = True
+        s.to_csv(checkfile, sep=' ')
+
+        return send_this_email
+
+
+
+
 
 
 
@@ -353,26 +478,50 @@ def PrintAvailableSites(df):
 
 
 
-def main(start_date, length_stay, url,
+def main(start_date, length_stay,
+            # url,
+            website, campground,
             preferred=None, blacklist=None, debug=False):
 
-    #Get Stay interval
+    #GET CAMPGROUND URL
+    url = '{}/{}'.format(urls[website], campIDs[campground])
+
+    #GET STAY INTERVAL
     start_date, end_date = GetStayInterval(start_date, length_stay)
 
-    #Get driver for web browser
+    #GET DRIVER FOR WEB BROWSER
     if debug:
         headless = False
     else:
         headless = True
     driver = GetWebDriver_Chrome(headless=headless)
 
-
+    #SCRAPE WEB FOR CAMPSITE AVAILABILITY
     df = CheckAvailability(driver, url, start_date, end_date,
-                            preferred=preferred, blacklist=blacklist)
+                            preferred=preferred, blacklist=blacklist,
+                            debug=debug)
 
-    available = PrintAvailableSites(df)
+    #ASSESS AVAILABILITY
+    # available = PrintAvailableSites(df)
+    report, avail = ReportAvailableSites(df)
+    print(report)
 
-    #close browser
+
+    #SEND EMAIL NOTIFICATION IF AVAILABLE SITES
+    if avail:
+        MakeSendAvailabilityReport(report, campground)
+
+
+
+
+
+
+
+
+
+
+
+    #CLOSE BROWSER
     if debug:
         print('NOT CLOSING BROWSER AT END FOR DEBUGGING')
     else:
@@ -392,7 +541,9 @@ if __name__ == "__main__":
     #inputs
     start_date = '2020-03-20'
     length_stay = 2
-    URL = '{}/{}'.format(urls['recreation.gov'], campIDs['pointreyes'])
+    # URL = '{}/{}'.format(urls['recreation.gov'], campIDs['pointreyes'])
+    Campground = 'pointreyes'
+    Website    = 'recreation.gov'
 
     #text keywords of site names I dont want
     Blacklist = [
@@ -402,7 +553,9 @@ if __name__ == "__main__":
                     'TOMALES BEACH GROUP',
                 ]
 
-    main(start_date=start_date, length_stay=length_stay, url=URL,
+    main(start_date=start_date, length_stay=length_stay,
+            # url=URL,
+            website=Website, campground=Campground,
             blacklist=Blacklist, debug=DEBUG)
 
 

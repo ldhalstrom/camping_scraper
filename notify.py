@@ -22,31 +22,6 @@ def ReadEmailCredentials(ifile='email_credential.txt'):
     return sender, passwd, reciever
 
 
-def testsend(SUBJECT, CONTENT, reciever, sender, passwd):
-
-    # content = ("Content to send")
-
-    # SUBJECT = 'test subject'
-    # CONTENT = 'test content'
-
-    message = 'Subject: {}\n\n{}'.format(SUBJECT, CONTENT)
-
-    mail = smtplib.SMTP('smtp.gmail.com',587)
-
-    mail.ehlo()
-
-    mail.starttls()
-
-    mail.login(sender,passwd)
-
-    mail.sendmail(sender,reciever,message)
-
-    mail.close()
-
-    print("Sent")
-
-
-
 def SendEmail(Subject, Content, reciever, sender, passwd):
     """Send an email
 
