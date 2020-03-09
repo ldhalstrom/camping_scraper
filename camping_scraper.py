@@ -372,6 +372,7 @@ def MakeSendAvailabilityReport(report, campground):
     #check if email is paused
     stillsend = CheckEmailPause()
     if not stillsend:
+        print('Emails are paused: not sending')
         return
 
 
