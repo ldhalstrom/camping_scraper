@@ -8,21 +8,28 @@ import smtplib
 
 
 def ReadEmailCredentials(ifile='email_credential.txt'):
-    """Read email address and password of email to use for notificaitons
-    1st line: email address, 2nd line: password
+    """Read email address and password of email to use for notificaitons and recipient
+    1st line: sender email address, 2nd line: password, 3rd line: recipient address
     NOTE: you should make this file unreadable (chmod 700)
     """
 
     f = open(ifile, 'r')
-    email  = f.readline().strip()
-    passwd = f.readline().strip()
+    sender   = f.readline().strip()
+    passwd   = f.readline().strip()
+    reciever = f.readline().strip()
     f.close()
 
-    return email, passwd
+    return sender, passwd, reciever
 
 
-def testsend(sender, passwd, reciever):
-    content = ("Content to send")
+def testsend(SUBJECT, CONTENT, reciever, sender, passwd):
+
+    # content = ("Content to send")
+
+    # SUBJECT = 'test subject'
+    # CONTENT = 'test content'
+
+    message = 'Subject: {}\n\n{}'.format(SUBJECT, CONTENT)
 
     mail = smtplib.SMTP('smtp.gmail.com',587)
 
@@ -32,7 +39,7 @@ def testsend(sender, passwd, reciever):
 
     mail.login(sender,passwd)
 
-    mail.sendmail(sender,reciever,content)
+    mail.sendmail(sender,reciever,message)
 
     mail.close()
 
@@ -40,6 +47,30 @@ def testsend(sender, passwd, reciever):
 
 
 
+def SendEmail(Subject, Content, reciever, sender, passwd):
+    """Send an email
+
+    Subject  --> email subject text
+    Content  --> email content text
+    reciever --> recipient email address
+    sender   --> sender email address
+    passwd   --> sender email password
+    """
+
+    #Construct email message
+    message = 'Subject: {}\n\n{}'.format(Subject, Content)
+
+    mail = smtplib.SMTP('smtp.gmail.com',587)
+
+    mail.ehlo()
+
+    mail.starttls()
+
+    mail.login(sender,passwd)
+
+    mail.sendmail(sender,reciever,message)
+
+    mail.close()
 
 
 
@@ -61,17 +92,25 @@ def testsend(sender, passwd, reciever):
 
 
 
-def main():
+def main(Subject, Content):
 
 
-    email, passwd = ReadEmailCredentials()
-    # print(email)
-    # print(passwd)
+    #READ CREDENTIALS FOR SENDER EMAIL AND RECIPIENT
+    sender, passwd, reciever = ReadEmailCredentials()
 
-    testsend(email, passwd, email)
+    #SEND THE EMAIL
+    SendEmail(Subject, Content, reciever, sender, passwd)
 
 if __name__ == "__main__":
-    main()
+
+
+    #test
+
+    Subj = 'test subject'
+    Cont = 'test content'
+
+
+    main(Subj, Cont)
 
 
 
