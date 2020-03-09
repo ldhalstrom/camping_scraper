@@ -43,6 +43,9 @@ def time_delay(tmin=1, tmax=2):
     time.sleep(randint(tmin,tmax))
 
 
+def Touch(filename):
+        open(filename, 'a').close()
+
 
 #SET UP WEB DRIVER
     #Selenium webdriver uses a web browser to navigate the web
@@ -392,9 +395,6 @@ def CheckEmailPause():
     """ Pause emails if notification has already been sent so I dont get spammed
     """
 
-    def Touch(filename):
-        open(filename, 'a').close()
-
     checkfile = 'pause.info'
     send_this_email = False
 
@@ -531,6 +531,8 @@ def main(start_date, length_stay,
 if __name__ == "__main__":
 
 
+    # Touch('itran.txt')
+
     DEBUG = False
 
     #SPECIFY CAMPING INTERVAL
@@ -548,9 +550,9 @@ if __name__ == "__main__":
     #text keywords of site names I dont want
     Blacklist = [
                     'BOAT A',
-                    'BOAT B',
-                    'MARSHALL BEACH GROUP',
-                    'TOMALES BEACH GROUP',
+                    # 'BOAT B',
+                    # 'MARSHALL BEACH GROUP',
+                    # 'TOMALES BEACH GROUP',
                 ]
 
     main(start_date=start_date, length_stay=length_stay,
