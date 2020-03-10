@@ -23,6 +23,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.firefox.options import Options
 from random import randint
 # import datetime
 from datetime import datetime, timedelta
@@ -103,7 +104,40 @@ def GetWebDriver_Chrome(chromedriver=None, headless=True):
     return driver
 
 
+#firefox
+def GetWebDriver_Firefox(browserdriver=None, headless=True):
+    """
+    browserdriver --> path to chrome browser driver executable
+    """
 
+
+
+    #Default locations for driver
+    if browserdriver is None:
+        opsys = GetOS()
+        if opsys == 'macOS':
+            #macOS
+            browserdriver="/Applications/geckodriver"
+        elif opsys == 'Windows':
+            #WINDOWS
+            print('NEED UPDATED CHROMEDRIVER PATH FOR WINDOWS')
+            browserdriver="/Applications/geckodriver"
+        else:
+            #LINUX
+            #sudo apt-get install chromium-chromedriver
+            browserdriver="/lib/BrowserDrivers/geckodriver"
+
+    if headless:
+        options = webdriver.firefox.options.Options()
+        options.headless = True
+        driver = webdriver.Firefox(options=options, executable_path=browserdriver)
+
+    else:
+        # os.environ["webdriver.chrome.driver"] = chromedriver
+        # driver = webdriver.Chrome(chromedriver)
+
+        driver = webdriver.Firefox(executable_path=browserdriver,)
+    return driver
 
 
 
