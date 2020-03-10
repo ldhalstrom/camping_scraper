@@ -540,7 +540,8 @@ def main(start_date, length_stay,
 
     #GET DRIVER FOR WEB BROWSER
     headless = True if debug else False
-    driver = GetWebDriver_Chrome(headless=headless)
+    # driver = GetWebDriver_Chrome(headless=headless)
+    driver = GetWebDriver_Firefox(headless=headless)
 
     #SCRAPE WEB FOR CAMPSITE AVAILABILITY
     df = CheckAvailability(driver, url, start_date, end_date,
@@ -580,7 +581,7 @@ if __name__ == "__main__":
     # Touch('itran.txt')
 
     DEBUG = False
-    DEBUG = True
+    # DEBUG = True
 
     #SPECIFY CAMPING INTERVAL
     #start date and length of stay (nights)
@@ -597,9 +598,9 @@ if __name__ == "__main__":
     #text keywords of site names I dont want
     Blacklist = [
                     'BOAT A',
-                    # 'BOAT B',
-                    # 'MARSHALL BEACH GROUP',
-                    # 'TOMALES BEACH GROUP',
+                    'BOAT B',
+                    'MARSHALL BEACH GROUP',
+                    'TOMALES BEACH GROUP',
                 ]
 
     main(start_date=start_date, length_stay=length_stay,
