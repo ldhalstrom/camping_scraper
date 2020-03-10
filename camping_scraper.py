@@ -77,12 +77,13 @@ def GetWebDriver_Chrome(chromedriver=None, headless=True):
             #macOS
             chromedriver="/Applications/chromedriver"
         elif opsys == 'Windows':
-            #windows
+            #WINDOWS
+            print('NEED UPDATED CHROMEDRIVER PATH FOR WINDOWS')
             chromedriver="/Applications/chromedriver"
         else:
-            #linux
-            print('NEED TO ADD CHROMEDRIVER PATH FOR LINUX')
-            chromedriver="/Applications/chromedriver"
+            #LINUX
+            #sudo apt-get install chromium-chromedriver
+            chromedriver="/usr/lib/chromium-browser/chromedriver"
 
 
     if headless:
