@@ -547,6 +547,7 @@ if __name__ == "__main__":
     # Touch('itran.txt')
 
     DEBUG = False
+    DEBUG = True
 
     #SPECIFY CAMPING INTERVAL
     #start date and length of stay (nights)
