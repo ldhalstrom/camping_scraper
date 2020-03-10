@@ -591,8 +591,8 @@ if __name__ == "__main__":
 
     #POINT REYES
     #inputs
-    start_date  = '2020-03-20'
-    length_stay = 2
+    start_date  = '2020-03-21'
+    length_stay = 1
     # URL = '{}/{}'.format(urls['recreation.gov'], campIDs['pointreyes'])
     Campground = 'pointreyes'
     Website    = 'recreation.gov'
@@ -600,9 +600,9 @@ if __name__ == "__main__":
     #text keywords of site names I dont want
     Blacklist = [
                     'BOAT A',
-                    # 'BOAT B',
-                    # 'MARSHALL BEACH GROUP',
-                    # 'TOMALES BEACH GROUP',
+                    'BOAT B',
+                    'MARSHALL BEACH GROUP',
+                    'TOMALES BEACH GROUP',
                 ]
 
     main(start_date=start_date, length_stay=length_stay,
