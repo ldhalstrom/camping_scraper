@@ -73,7 +73,7 @@ def GetWebDriver_Chrome(chromedriver=None, headless=True):
     #Default locations for chromedriver
     if chromedriver is None:
         opsys = GetOS()
-        if opsys == 'Darwin':
+        if opsys == 'macOS':
             #macOS
             chromedriver="/Applications/chromedriver"
         elif opsys == 'Windows':
@@ -84,7 +84,6 @@ def GetWebDriver_Chrome(chromedriver=None, headless=True):
             #LINUX
             #sudo apt-get install chromium-chromedriver
             chromedriver="/usr/lib/chromium-browser/chromedriver"
-
 
     if headless:
         WINDOW_SIZE = "1920,1080"
