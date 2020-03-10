@@ -86,7 +86,11 @@ def GetWebDriver_Chrome(chromedriver=None, headless=True):
             #LINUX
             #sudo apt-get install chromium-chromedriver
             chromedriver="/usr/lib/chromium-browser/chromedriver"
-            chromedriver="/mnt/c/Program Files (x86)/Google/Chrome/BrowserDriver/chromedriver.exe" #WSL
+
+            #this is for Windows Subsystem for Linux:
+            chromedriver="/mnt/c/Program Files (x86)/Google/Chrome/BrowserDriver/chromedriver.exe"
+
+            print('ADD CHECK FOR WSL VS LINUX*************************')
 
     if headless:
         WINDOW_SIZE = "1920,1080"
@@ -596,9 +600,9 @@ if __name__ == "__main__":
     #text keywords of site names I dont want
     Blacklist = [
                     'BOAT A',
-                    'BOAT B',
-                    'MARSHALL BEACH GROUP',
-                    'TOMALES BEACH GROUP',
+                    # 'BOAT B',
+                    # 'MARSHALL BEACH GROUP',
+                    # 'TOMALES BEACH GROUP',
                 ]
 
     main(start_date=start_date, length_stay=length_stay,
