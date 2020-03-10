@@ -81,10 +81,12 @@ def GetWebDriver_Chrome(chromedriver=None, headless=True):
             #WINDOWS
             print('NEED UPDATED CHROMEDRIVER PATH FOR WINDOWS')
             chromedriver="/Applications/chromedriver"
+            chromedriver="/mnt/c/Program Files (x86)/Google/Chrome/BrowserDriver/chromedriver.exe"
         else:
             #LINUX
             #sudo apt-get install chromium-chromedriver
             chromedriver="/usr/lib/chromium-browser/chromedriver"
+            chromedriver="/mnt/c/Program Files (x86)/Google/Chrome/BrowserDriver/chromedriver.exe" #WSL
 
     if headless:
         WINDOW_SIZE = "1920,1080"
@@ -119,7 +121,6 @@ def GetWebDriver_Firefox(browserdriver=None, headless=True):
             browserdriver="/Applications/geckodriver"
         elif opsys == 'Windows':
             #WINDOWS
-            print('NEED UPDATED CHROMEDRIVER PATH FOR WINDOWS')
             browserdriver="/Applications/geckodriver"
         else:
             #LINUX
@@ -537,8 +538,8 @@ def main(start_date, length_stay,
 
     #GET DRIVER FOR WEB BROWSER
     headless = False if debug else True
-    # driver = GetWebDriver_Chrome(headless=headless)
-    driver = GetWebDriver_Firefox(headless=headless)
+    driver = GetWebDriver_Chrome(headless=headless)
+    # driver = GetWebDriver_Firefox(headless=headless)
 
     #SCRAPE WEB FOR CAMPSITE AVAILABILITY
     df = CheckAvailability(driver, url, start_date, end_date,
