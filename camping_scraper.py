@@ -30,9 +30,20 @@ import os
 import time
 import pandas as pd
 
+import platform
+
 
 #script to send email notifications
 import notify
+
+
+def GetOS():
+    platforms = {
+        'Linux'   : 'Linux',
+        'Darwin'  : 'macOS',
+        'Windows' : 'Windows'
+    }
+    return platforms[platform.system()]
 
 
 def time_delay(tmin=1, tmax=2):
@@ -44,7 +55,9 @@ def time_delay(tmin=1, tmax=2):
 
 
 def Touch(filename):
-        open(filename, 'a').close()
+    """ Create an empty file named `filename`
+    """
+    open(filename, 'a').close()
 
 
 #SET UP WEB DRIVER
@@ -52,12 +65,25 @@ def Touch(filename):
     #needs a driver for the specific browser installed locally on your system
 
 #chrome
-def GetWebDriver_Chrome(chromedriver="/Applications/chromedriver", headless=True):
+def GetWebDriver_Chrome(chromedriver=None, headless=True):
     """
     chrome driver --> path to chrome browser driver executable
     """
 
-    CHROMEDRIVER_PATH = '/usr/bin/chromedriver'
+    #Default locations for chromedriver
+    if chromedriver is None:
+        opsys = GetOS()
+        if opsys == 'Darwin':
+            #macOS
+            chromedriver="/Applications/chromedriver"
+        elif opsys == 'Windows':
+            #windows
+            chromedriver="/Applications/chromedriver"
+        else:
+            #linux
+            print('NEED TO ADD CHROMEDRIVER PATH FOR LINUX')
+            chromedriver="/Applications/chromedriver"
+
 
     if headless:
         WINDOW_SIZE = "1920,1080"
@@ -91,34 +117,22 @@ campIDs = {
             'lassen_manzanita' : 234039
             }
 
+urls = {
+        'recreation.gov' : 'https://www.recreation.gov/camping/campgrounds',
+        }
+
+
 
 #Point Reyes
 old_url = 'https://www.recreation.gov/camping/campgrounds/233359'
 
-urls = {
-    'recreation.gov' : 'https://www.recreation.gov/camping/campgrounds',
-    }
 
 
 
 
-start_date = '2020-03-13'
-end_date   = '2020-03-22'
 
 
 INPUT_DATE_FORMAT = "%Y-%m-%d"
-
-
-def format_date(date, FMT="%Y-%m-%d"):
-    date = datetime.strptime(date, FMT)
-    date_formatted = datetime.strftime(date, "%Y-%m-%dT00:00:00Z")
-    return date_formatted
-
-
-# print(format_date(start_date))
-
-
-
 
 
 
@@ -491,10 +505,7 @@ def main(start_date, length_stay,
     start_date, end_date = GetStayInterval(start_date, length_stay)
 
     #GET DRIVER FOR WEB BROWSER
-    if debug:
-        headless = False
-    else:
-        headless = True
+    headless = True if debug else False
     driver = GetWebDriver_Chrome(headless=headless)
 
     #SCRAPE WEB FOR CAMPSITE AVAILABILITY
@@ -542,7 +553,7 @@ if __name__ == "__main__":
 
     #POINT REYES
     #inputs
-    start_date = '2020-03-20'
+    start_date  = '2020-03-20'
     length_stay = 2
     # URL = '{}/{}'.format(urls['recreation.gov'], campIDs['pointreyes'])
     Campground = 'pointreyes'
