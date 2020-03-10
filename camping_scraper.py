@@ -111,7 +111,6 @@ def GetWebDriver_Firefox(browserdriver=None, headless=True):
     """
 
 
-
     #Default locations for driver
     if browserdriver is None:
         opsys = GetOS()
@@ -128,13 +127,11 @@ def GetWebDriver_Firefox(browserdriver=None, headless=True):
             browserdriver="/lib/BrowserDrivers/geckodriver"
 
     if headless:
-        options = webdriver.firefox.options.Options()
-        options.headless = True
+        options = webdriver.FirefoxOptions()
+        options.add_argument("--headless")
         driver = webdriver.Firefox(options=options, executable_path=browserdriver)
 
     else:
-        # os.environ["webdriver.chrome.driver"] = chromedriver
-        # driver = webdriver.Chrome(chromedriver)
 
         driver = webdriver.Firefox(executable_path=browserdriver,)
     return driver
@@ -539,7 +536,7 @@ def main(start_date, length_stay,
     start_date, end_date = GetStayInterval(start_date, length_stay)
 
     #GET DRIVER FOR WEB BROWSER
-    headless = True if debug else False
+    headless = False if debug else True
     # driver = GetWebDriver_Chrome(headless=headless)
     driver = GetWebDriver_Firefox(headless=headless)
 
