@@ -44,7 +44,11 @@ def GetOS():
         'Darwin'  : 'macOS',
         'Windows' : 'Windows'
     }
-    return platforms[platform.system()]
+    opsys = platforms[platform.system()]
+    if opsys == 'Linux' and "microsoft" in platform.uname()[3].lower():
+        #If on Windows Subsystem for Linux
+        opsys = 'WSL'
+    return opsys
 
 
 def time_delay(tmin=1, tmax=2):
@@ -79,18 +83,14 @@ def GetWebDriver_Chrome(chromedriver=None, headless=True):
             chromedriver="/Applications/chromedriver"
         elif opsys == 'Windows':
             #WINDOWS
-            print('NEED UPDATED CHROMEDRIVER PATH FOR WINDOWS')
-            chromedriver="/Applications/chromedriver"
+            chromedriver="C:/Program Files (x86)/Google/Chrome/BrowserDriver/chromedriver.exe"
+        elif opsys == 'WSL':
+            #Windows Subsystem for Linux: drive chrome from the windows side
             chromedriver="/mnt/c/Program Files (x86)/Google/Chrome/BrowserDriver/chromedriver.exe"
         else:
             #LINUX
             #sudo apt-get install chromium-chromedriver
             chromedriver="/usr/lib/chromium-browser/chromedriver"
-
-            #this is for Windows Subsystem for Linux:
-            chromedriver="/mnt/c/Program Files (x86)/Google/Chrome/BrowserDriver/chromedriver.exe"
-
-            print('ADD CHECK FOR WSL VS LINUX*************************')
 
     if headless:
         WINDOW_SIZE = "1920,1080"
