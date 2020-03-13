@@ -38,6 +38,73 @@ import platform
 import notify
 
 
+
+########################################################################
+### GENERAL USE UTILITIES AND DICTS
+########################################################################
+
+
+#Dict for reservation website urls
+urls = {
+        'recreation.gov' : 'https://www.recreation.gov/camping/campgrounds',
+        }
+
+
+#Dict for recreation.gov campground IDs
+campIDs = {
+            'pointreyes'       : 233359,
+            'lassen_manzanita' : 234039
+            }
+
+
+def GetStayInterval(start, length, FMT="%Y-%m-%d"):
+    #turn start date in datetime object
+    start = datetime.strptime(start, FMT)
+    #get end date
+    end = start + timedelta(days=length)
+
+
+    return start, end
+
+
+
+
+
+
+
+
+def Touch(filename):
+    """ Create an empty file named `filename`
+    """
+    open(filename, 'a').close()
+
+
+
+
+
+
+
+
+
+# old_url = 'https://www.recreation.gov/camping/aspen-hollow-group/r/campgroundDetails.do?contractCode=NRSO&parkId=71546'
+
+# #Point Reyes
+# old_url = 'https://www.recreation.gov/camping/campgrounds/233359'
+
+
+# INPUT_DATE_FORMAT = "%Y-%m-%d"
+
+
+
+
+
+
+
+
+########################################################################
+### WEBSCRAPING FUNCTIONS
+########################################################################
+
 def GetOS():
     platforms = {
         'Linux'   : 'Linux',
@@ -57,13 +124,6 @@ def time_delay(tmin=1, tmax=2):
     tmin/tmax: minimum/maximum amoun of seconds in delay
     """
     time.sleep(randint(tmin,tmax))
-
-
-def Touch(filename):
-    """ Create an empty file named `filename`
-    """
-    open(filename, 'a').close()
-
 
 #SET UP WEB DRIVER
     #Selenium webdriver uses a web browser to navigate the web
@@ -140,53 +200,6 @@ def GetWebDriver_Firefox(browserdriver=None, headless=True):
 
         driver = webdriver.Firefox(executable_path=browserdriver,)
     return driver
-
-
-
-old_url = 'https://www.recreation.gov/camping/aspen-hollow-group/r/campgroundDetails.do?contractCode=NRSO&parkId=71546'
-
-
-#recreation.gov campground IDs
-
-campIDs = {
-            'pointreyes'       : 233359,
-            'lassen_manzanita' : 234039
-            }
-
-urls = {
-        'recreation.gov' : 'https://www.recreation.gov/camping/campgrounds',
-        }
-
-
-
-#Point Reyes
-old_url = 'https://www.recreation.gov/camping/campgrounds/233359'
-
-
-
-
-
-
-
-INPUT_DATE_FORMAT = "%Y-%m-%d"
-
-
-
-
-
-def GetStayInterval(start, length, FMT="%Y-%m-%d"):
-    #turn start date in datetime object
-    start = datetime.strptime(start, FMT)
-    #get end date
-    end = start + timedelta(days=length)
-
-
-    return start, end
-
-
-
-
-
 
 
 
@@ -423,6 +436,12 @@ def ReportAvailableSites(df):
 
     return report, availability
 
+
+
+
+########################################################################
+### EMAIL NOTIFICATION FUNCTIONS
+########################################################################
 
 
 def MakeSendAvailabilityReport(report, campground):
