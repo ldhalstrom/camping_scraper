@@ -211,6 +211,209 @@ def GetWebDriver_Firefox(browserdriver=None, headless=True):
 #SEARCH FOR CAMPSITE AVAILABILITY
     #
 
+
+def GetAvailability(driver, url, start_date, end_date,
+                        # preferred=None, blacklist=None,
+                        debug=False):
+    """ Scrape website for campsite(s) are availability information
+    Return html soup from page that shows which sites are available
+    driver --> web browser driver
+    url    --> url to desired campground
+    """
+
+    #Date format on recreation.gov
+    FMT = "%m/%d/%Y"
+
+    #OPEN CAMPGROUND URL
+    driver.get(url)
+    time_delay()
+
+    #ENTER START DATE
+        #right click on "Check In" web dialog and select "Inspect"
+    #Find Start Date element by xpath with startDate keyword
+    selectElem=driver.find_element_by_xpath('//*[@id="startDate"]')
+    #clear current value
+    selectElem.clear()
+    #send desired start date value
+    selectElem.send_keys(start_date.strftime(FMT))
+    time_delay()
+    # #submit?
+    # selectElem.submit()
+    # time_delay()
+
+
+    #ENTER END DATE
+        #same process as start date
+    selectElem=driver.find_element_by_xpath('//*[@id="endDate"]')
+    selectElem.clear()
+    selectElem.send_keys(end_date.strftime(FMT))
+    time_delay()
+    # selectElem.submit()
+    # time_delay()
+
+    #NAVIGATE TO AVAILABILITY PAGE
+    #Get "View by Availability" button element
+    selectElem=driver.find_element_by_xpath('//*[@id="campground-view-by-avail"]')
+    #click it
+    selectElem.click()
+
+    # #wait for everything on the page to load
+    # element = WebDriverWait(driver, 30).until(lambda x: x.find_element_by_id('iframe_container'))
+    time_delay()
+
+
+
+
+
+    ####################################
+    #GET HTML SOUP FROM WEBPAGE
+    # soup = BeautifulSoup(driver.page_source, 'html.parser')
+    soup = BeautifulSoup(driver.page_source, 'lxml')
+
+    # print(soup.prettify())
+
+    return soup
+
+
+def ProcessAvailability(soup,
+                        # driver, url, start_date, end_date,
+                        preferred=None, blacklist=None,
+                        debug=False):
+    """ Clean up html soup from website availability page
+    Assess if any sites are available?
+    preferred, blacklist --> campsite lists
+    """
+
+    #get campsite availability table
+    table = soup.find(lambda tag: tag.name=='table' and tag.has_attr('id') and tag['id']=="availability-table")
+
+
+
+
+    #GET HEADERS FOR HTML TABLE (MAKE THIS OBJECT ORIENTED IN FUTURE)*****************
+
+    #get column headers
+        #find by right-click -> Inspect on web table cell with column header
+        #find 'th' for header objects
+        #class identifies specific object for col headers
+        #stripped text is the text in the cell
+    colname = [tx.text.strip() for tx in soup.find_all('th',
+                attrs={'class' : "camp-sortable-column-header"}
+                )]
+    #only unique names
+    tmp = list(colname)
+    colname = list()
+    for c in tmp:
+        if c not in colname:
+            #only add current value if it is not in list already
+            colname.append(c)
+
+
+    #get row headers
+        #find by right-click -> Inspect on web table cell with campsite name in it
+        #find 'th' for header objects
+        #class identifies specific object for row headers
+        #stripped text is the text in the cell
+    rowname = [tx.text.strip() for tx in soup.find_all('th',
+                attrs={'class' : "site-id-wrap camping-site-name-cell"}
+                )]
+
+
+
+
+
+
+    #GET BODY OF TABLE
+
+
+    data = []
+    #get just the body of the table
+    table_body = table.find('tbody')
+    #split by rows
+    rows = table_body.find_all('tr')
+    for row in rows:
+        #split by columns
+        cols = row.find_all('td')
+        cols = [ele.text.strip() for ele in cols] #we just want the cell text
+        data.append([ele for ele in cols if ele]) # Get rid of empty values
+        # for col in cols:
+        #     #we just want the cell text
+        #     ele = col.text.strip()
+        #     # Get rid of empty values
+        #     if ele:
+        #         data.append(ele)
+
+    #PREPEND COLUMN FOR CAMPSITE NAME
+    for i, row in enumerate(data):
+        #for each row, add the rowname (campsite name) to the front
+        data[i].insert(0, rowname[i])
+
+    #Finalized table, with column headers
+    dat = pd.DataFrame(data, columns=colname)
+
+
+
+    #DOWNSELECT TABLE TO DESIRED STAY INTERVAL
+        #1st col (0) is site name, 2nd col is "loop",
+        #consequtive cols are increasing days, starting with start_date
+    df = dat.iloc[:,0:length_stay+2] #plus 2 because extra col and zero indexing
+
+
+
+
+
+
+
+
+    #DETERMINE IF ANY (DESIRED) SITES ARE AVAILABLE FOR DESIRED DATE
+
+
+
+    if debug:
+        print(df)
+
+    #Get column names that correspond to days you will be staying
+    depcols = df.columns.values[2:]
+    print('NEED TO TEST THIS FOR ANOTHER CAMPSITE*******************************')
+
+    #drop any row that has a reservation in stay interval
+    for c in depcols:
+        df = df.loc[(df[c] != 'R') & (df[c] != 'X')]
+
+
+    if preferred is not None:
+        #only check for availability in supplied sites
+        print('Checking preferred sites only')
+        for pr in preferred:
+            print('    {}'.format(pr))
+
+        #drop any remaining row that is blacklisted
+        for i, row in df.iterrows():
+            hits = [pr in row['Sites'] for pr in preferred]
+            if not any(hits):
+                #drop the row if none of the perferred sites match
+                df = df.drop(i)
+
+    elif blacklist is not None:
+        #preferred is None, so any available except blacklist
+        print('Checking all sites except:')
+        for bl in blacklist:
+            print('    {}'.format(bl))
+
+        #drop any remaining row that is blacklisted
+        for i, row in df.iterrows():
+            for bl in blacklist:
+                if bl in row['Sites']:
+                    df = df.drop(i)
+
+    else:
+        #any available (already done)
+        print('Checking all sites')
+
+    return df
+
+
+
 def CheckAvailability(driver, url, start_date, end_date,
                         preferred=None, blacklist=None, debug=False):
     """ Check if campsite(s) are available
@@ -574,7 +777,13 @@ def main(start_date, length_stay,
     # driver = GetWebDriver_Firefox(headless=headless)
 
     #SCRAPE WEB FOR CAMPSITE AVAILABILITY
-    df = CheckAvailability(driver, url, start_date, end_date,
+    # df = CheckAvailability(driver, url, start_date, end_date,
+    #                         preferred=preferred, blacklist=blacklist,
+    #                         debug=debug)
+
+    soup = GetAvailability(driver, url, start_date, end_date,
+                            debug=debug)
+    df = ProcessAvailability(soup,
                             preferred=preferred, blacklist=blacklist,
                             debug=debug)
 
