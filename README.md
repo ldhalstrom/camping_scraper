@@ -19,4 +19,3 @@
     - Store dataframe of sites for which emails have been sent
     - Remove site if it has since become unavailable
 - Scraper for reservecalifornia
-- Check for WSL vs Linux

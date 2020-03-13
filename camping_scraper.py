@@ -357,6 +357,15 @@ def CheckAvailability(driver, url, start_date, end_date,
     if preferred is not None:
         #only check for availability in supplied sites
         print('Checking preferred sites only')
+        for pr in preferred:
+            print('    {}'.format(pr))
+
+        #drop any remaining row that is blacklisted
+        for i, row in df.iterrows():
+            hits = [pr in row['Sites'] for pr in preferred]
+            if not any(hits):
+                #drop the row if none of the perferred sites match
+                df = df.drop(i)
 
     elif blacklist is not None:
         #preferred is None, so any available except blacklist
