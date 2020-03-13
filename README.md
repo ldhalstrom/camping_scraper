@@ -12,13 +12,11 @@
 
 
 ## TO DO
-- Scraper for reservations.gov
-    - Search for given date + length of stay
-    - Search for campsites:
-        - specified site
-        - not specified site
-        - all sites
-- Scraper of reservecalifornia
-- cron job that continually runs scraper
-    - agnostic to all scraper tools (utils)
-- Notification script that emails me
+- Wrapper for checking multiple campsites
+    - Run main multiple times
+    - Generate single summary report
+- Higher fidelity notification logger
+    - Store dataframe of sites for which emails have been sent
+    - Remove site if it has since become unavailable
+- Scraper for reservecalifornia
+- Check for WSL vs Linux
