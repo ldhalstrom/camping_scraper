@@ -582,7 +582,7 @@ def main(start_date, length_stay,
     url = '{}/{}'.format(urls[website], campIDs[campground])
 
     #GET STAY INTERVAL(s)
-    start_date, end_date = GetStayInterval(start_date, length_stay)
+    start_datetime, end_datetime = GetStayInterval(start_date, length_stay)
     # sds, eds = [], []
     # for sd in start_dates:
     #     sd, ed = GetStayInterval(sd, length_stay)
@@ -595,7 +595,7 @@ def main(start_date, length_stay,
     # driver = GetWebDriver_Firefox(headless=headless)
 
     #SCRAPE WEB FOR CAMPSITE AVAILABILITY
-    soup = GetAvailability(driver, url, start_date, end_date,
+    soup = GetAvailability(driver, url, start_datetime, end_datetime,
                             debug=debug)
     df   = ProcessAvailability(soup, length_stay,
                             preferred=preferred, blacklist=blacklist,
