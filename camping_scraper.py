@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ WEB SCRAPER FOR RESERVING CAMPSITES
 
 
@@ -211,11 +212,11 @@ def GetWebDriver_Firefox(browserdriver=None, headless=True):
 #SEARCH FOR CAMPSITE AVAILABILITY
     #
 
-
 def GetAvailability(driver, url, start_date, end_date,
                         debug=False):
-    """ Scrape website for campsite(s) are availability information
+    """ Scrape website for campsite(s) are availability information between start/end dates.
     Return html soup from page that shows which sites are available
+    This data can be reused for MULTIPLE stay intervals
     driver --> web browser driver
     url    --> url to desired campground
     """
@@ -274,7 +275,7 @@ def GetAvailability(driver, url, start_date, end_date,
     return soup
 
 
-def ProcessAvailability(soup,
+def ProcessAvailability(soup, length_stay,
                         preferred=None, blacklist=None,
                         debug=False):
     """ Clean up html soup from website availability page
@@ -348,7 +349,6 @@ def ProcessAvailability(soup,
 
     #Finalized table, with column headers
     dat = pd.DataFrame(data, columns=colname)
-
 
 
     #DOWNSELECT TABLE TO DESIRED STAY INTERVAL
@@ -427,11 +427,13 @@ def PrintAvailableSites(df):
     return availability
 
 
-def ReportAvailableSites(df):
+def ReportAvailableSites(df, start_date=''):
     """
     """
 
-    report = ''
+    #initialize report with start of stay interval
+    # report = ''
+    report = '{}: '.format(start_date)
 
     if df.empty:
         availability = False
@@ -574,11 +576,18 @@ def main(start_date, length_stay,
             website, campground,
             preferred=None, blacklist=None, debug=False):
 
+    # start_dates = list([start_date]) if type(start_date) is not list else list(start_date)
+
     #GET CAMPGROUND URL
     url = '{}/{}'.format(urls[website], campIDs[campground])
 
-    #GET STAY INTERVAL
+    #GET STAY INTERVAL(s)
     start_date, end_date = GetStayInterval(start_date, length_stay)
+    # sds, eds = [], []
+    # for sd in start_dates:
+    #     sd, ed = GetStayInterval(sd, length_stay)
+    #     sds.append(sd)
+    #     eds.append(ed)
 
     #GET DRIVER FOR WEB BROWSER
     headless = False if debug else True
@@ -588,19 +597,48 @@ def main(start_date, length_stay,
     #SCRAPE WEB FOR CAMPSITE AVAILABILITY
     soup = GetAvailability(driver, url, start_date, end_date,
                             debug=debug)
-    df   = ProcessAvailability(soup,
+    df   = ProcessAvailability(soup, length_stay,
                             preferred=preferred, blacklist=blacklist,
                             debug=debug)
-
     #ASSESS AVAILABILITY
     # available = PrintAvailableSites(df)
-    report, avail = ReportAvailableSites(df)
+    report, avail = ReportAvailableSites(df, start_date)
     print(report)
-
 
     #SEND EMAIL NOTIFICATION IF AVAILABLE SITES
     if avail:
         MakeSendAvailabilityReport(report, campground)
+
+
+
+    # #get availability info for entire date range (assumes dates are given in chronological order*****************************8)
+    # # dat = GetAvailability(driver, url, start_date, end_date,
+    # #                         debug=debug)
+    # dat = GetAvailability(driver, url, sds[0], eds[-1],
+    #                         debug=debug)
+
+    # #check availability for each stay interval
+    # reports = ''
+    # send = False
+    # for sd in start_dates:
+    #     #downselect availability to specific stay interval, desired sites
+    #     df = ProcessAvailability(soup, sd, length_stay,
+    #                             preferred=preferred, blacklist=blacklist,
+    #                             debug=debug)
+
+    #     #ASSESS AVAILABILITY
+    #     # available = PrintAvailableSites(df)
+    #     report, avail = ReportAvailableSites(df, sd)
+    #     print(report)
+
+    #     if avail:
+    #         #if available site, add report outgoing email content
+    #         reports = '{}\n\n{}'.format(reports, report)
+    #         send = True
+
+    # #SEND EMAIL NOTIFICATION IF AVAILABLE SITES
+    # if send:
+    #     MakeSendAvailabilityReport(reports, campground)
 
 
 
@@ -634,6 +672,7 @@ if __name__ == "__main__":
     #POINT REYES
     #inputs
     start_date  = '2020-03-21'
+    start_dates  = ['2020-07-18', '2020-08-01', '2020-08-08', '2020-08-15', '2020-08-29', '2020-09-05', '2020-09-12', '2020-09-19', '2020-09-26',]
     length_stay = 1
     # URL = '{}/{}'.format(urls['recreation.gov'], campIDs['pointreyes'])
     Campground = 'pointreyes'
@@ -647,10 +686,16 @@ if __name__ == "__main__":
                     'TOMALES BEACH GROUP',
                 ]
 
-    main(start_date=start_date, length_stay=length_stay,
-            # url=URL,
-            website=Website, campground=Campground,
-            blacklist=Blacklist, debug=DEBUG)
+
+    # main(start_date=start_dates, length_stay=length_stay,
+    #             # url=URL,
+    #             website=Website, campground=Campground,
+    #             blacklist=Blacklist, debug=DEBUG)
+    for start_date in start_dates:
+        main(start_date=start_date, length_stay=length_stay,
+                # url=URL,
+                website=Website, campground=Campground,
+                blacklist=Blacklist, debug=DEBUG)
 
 
     # #LASSEN MANSANITA
