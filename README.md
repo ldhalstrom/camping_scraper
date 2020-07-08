@@ -1,9 +1,24 @@
 # Web Scraper for Reserving Campsites
 
+## Usage
+- Enter start date and length of stay in main `camping_scraper` script
+    + eventually make input independent of this script
+- Edit crontab to to run `cron.sh` (which runs camping scraper)
+    + see `cron.sh` for more details
+
 ## Requirements
-- selenium webdriver
+- Python modules (`pip install`...)
+    + `bs4` (beautiful soup)
+        * scraper
+    + `lxml`
+        * language for scraper
+    + `selenium` 
+        + webdriver
+- Web driver (for selenium)
     - needs a driver program for your chosen webbrowser (e.g. chromedriver or geckodriver)
     - need to download this file for your machine
+        + https://github.com/SeleniumHQ/selenium/wiki/ChromeDriver
+        + `sudo apt-get install chromium-chromedriver`
 
 ## Testing
 - recreation.gov

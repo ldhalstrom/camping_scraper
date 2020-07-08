@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ WEB SCRAPER FOR RESERVING CAMPSITES
 
 
@@ -601,6 +602,7 @@ if __name__ == "__main__":
     #POINT REYES
     #inputs
     start_date  = '2020-03-21'
+    start_dates  = ['2020-07-18', '2020-08-01', '2020-08-08', '2020-08-15', '2020-08-29', '2020-09-05', '2020-09-12', '2020-09-19', '2020-09-26',]
     length_stay = 1
     # URL = '{}/{}'.format(urls['recreation.gov'], campIDs['pointreyes'])
     Campground = 'pointreyes'
@@ -614,10 +616,12 @@ if __name__ == "__main__":
                     'TOMALES BEACH GROUP',
                 ]
 
-    main(start_date=start_date, length_stay=length_stay,
-            # url=URL,
-            website=Website, campground=Campground,
-            blacklist=Blacklist, debug=DEBUG)
+
+    for start_date in start_dates:
+        main(start_date=start_date, length_stay=length_stay,
+                # url=URL,
+                website=Website, campground=Campground,
+                blacklist=Blacklist, debug=DEBUG)
 
 
     # #LASSEN MANSANITA

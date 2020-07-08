@@ -2,6 +2,7 @@
 
 
 #######################################
+# TO EDIT CRON JOBS, TYPE:
 # crontab -e
 
 # Example of job definition:
@@ -13,8 +14,15 @@
 # |  |  |  |  |
 # *  *  *  *  * user-name  command to be executed
 
+#ADD THIS TO crontab TO RUN SCRAPER (AND UNCOMMENT):
 # #campsite webscraper
 # */5 * * * * cd ~/projects/personal/web_scraping/camping_scraper && ./cron.sh
+
+
+#TO START CRON SERVICE
+#sudo /etc/init.d/cron start
+#TO STOP CRON SERVICE
+#sudo /etc/init.d/cron stop
 
 #######################################
 
@@ -22,4 +30,5 @@
 echo `date` >> log.txt
 
 #script that runs webscraper. called periodically by crontab
-/Users/lhalstro/.pyenv/shims/python camping_scraper.py >> log.txt
+~/.pyenv/shims/python camping_scraper.py >> log.txt
+# ./camping_scraper.py >> log.txt
