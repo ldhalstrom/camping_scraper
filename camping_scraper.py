@@ -199,9 +199,11 @@ def GetStayInterval(start, length, FMT="%Y-%m-%d"):
 #SEARCH FOR CAMPSITE AVAILABILITY
     #
 
-def CheckAvailability(driver, url, start_date, end_date,
-                        preferred=None, blacklist=None, debug=False):
-    """ Check if campsite(s) are available
+def GetAvailability(driver, url, start_date, end_date,
+                        # preferred=None, blacklist=None,
+                        debug=False):
+    """ Get campsite(s) availablity status between start/end dates.
+    This data can be reused for MULTIPLE stay intervals
     driver --> web browser driver
     url    --> url to desired campground
     """
@@ -325,7 +327,16 @@ def CheckAvailability(driver, url, start_date, end_date,
     dat = pd.DataFrame(data, columns=colname)
 
 
+    return dat
 
+
+def CheckAvailability(dat, start_date, length_stay,
+                        preferred=None, blacklist=None,
+                        debug=False):
+    """ Check if any desired campsites are actually available within given data
+    This is applyed for ONE stay interval
+    dat --> availability status scraped from web by GetAvailability
+    """
 
 
     #DOWNSELECT TABLE TO DESIRED STAY INTERVAL
@@ -403,11 +414,13 @@ def PrintAvailableSites(df):
     return availability
 
 
-def ReportAvailableSites(df):
+def ReportAvailableSites(df, start_date=''):
     """
     """
 
-    report = ''
+    #initialize report with start of stay interval
+    # report = ''
+    report = '{}: '.format(start_date)
 
     if df.empty:
         availability = False
@@ -544,11 +557,18 @@ def main(start_date, length_stay,
             website, campground,
             preferred=None, blacklist=None, debug=False):
 
+    start_dates = list([start_date]) if type(start_date) is not list else list(start_date)
+
     #GET CAMPGROUND URL
     url = '{}/{}'.format(urls[website], campIDs[campground])
 
-    #GET STAY INTERVAL
-    start_date, end_date = GetStayInterval(start_date, length_stay)
+    #GET STAY INTERVAL(s)
+    # start_date, end_date = GetStayInterval(start_date, length_stay)
+    sds, eds = [], []
+    for sd in start_dates:
+        sd, ed = GetStayInterval(sd, length_stay)
+        sds.append(sd)
+        eds.append(ed)
 
     #GET DRIVER FOR WEB BROWSER
     headless = False if debug else True
@@ -556,19 +576,36 @@ def main(start_date, length_stay,
     # driver = GetWebDriver_Firefox(headless=headless)
 
     #SCRAPE WEB FOR CAMPSITE AVAILABILITY
-    df = CheckAvailability(driver, url, start_date, end_date,
-                            preferred=preferred, blacklist=blacklist,
+    #get availability info for entire date range (assumes dates are given in chronological order*****************************8)
+    # dat = GetAvailability(driver, url, start_date, end_date,
+    #                         debug=debug)
+    dat = GetAvailability(driver, url, sds[0], eds[-1],
                             debug=debug)
 
-    #ASSESS AVAILABILITY
-    # available = PrintAvailableSites(df)
-    report, avail = ReportAvailableSites(df)
-    print(report)
+    #check availability for each stay interval
+    reports = ''
+    send = False
+    for sd in start_dates:
+        #downselect availability to specific stay interval, desired sites
+        df = CheckAvailability(dat, sd, length_stay,
+                                preferred=preferred, blacklist=blacklist,
+                                debug=debug)
 
+        #ASSESS AVAILABILITY
+        # available = PrintAvailableSites(df)
+        report, avail = ReportAvailableSites(df, sd)
+        print(report)
+
+        if avail:
+            #if available site, add report outgoing email content
+            reports = '{}\n\n{}'.format(reports, report)
+            send = True
 
     #SEND EMAIL NOTIFICATION IF AVAILABLE SITES
-    if avail:
-        MakeSendAvailabilityReport(report, campground)
+    # if avail:
+    #     MakeSendAvailabilityReport(report, campground)
+    if send:
+        MakeSendAvailabilityReport(reports, campground)
 
 
 
@@ -617,11 +654,15 @@ if __name__ == "__main__":
                 ]
 
 
-    for start_date in start_dates:
-        main(start_date=start_date, length_stay=length_stay,
+    main(start_date=start_dates, length_stay=length_stay,
                 # url=URL,
                 website=Website, campground=Campground,
                 blacklist=Blacklist, debug=DEBUG)
+    # for start_date in start_dates:
+    #     main(start_date=start_date, length_stay=length_stay,
+    #             # url=URL,
+    #             website=Website, campground=Campground,
+    #             blacklist=Blacklist, debug=DEBUG)
 
 
     # #LASSEN MANSANITA
