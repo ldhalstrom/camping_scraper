@@ -5,6 +5,7 @@ NOTE: Need to 'allow less secure apps' in gmail
 """
 
 import smtplib
+import os
 
 
 def ReadEmailCredentials(ifile='email_credential.txt'):
@@ -13,6 +14,10 @@ def ReadEmailCredentials(ifile='email_credential.txt'):
     NOTE: you should make this file unreadable (chmod 700)
     """
 
+    if not os.path.exists(ifile):
+        print('FAILED TO SEND NOTIFICATION EMAIL')
+        print('PLEASE ADD EMAIL CREDENTIAL FILE SO THAT I CAN LOG IN AND SEND EMAILS')
+        return
     f = open(ifile, 'r')
     sender   = f.readline().strip()
     passwd   = f.readline().strip()
@@ -36,12 +41,14 @@ def SendEmail(Subject, Content, reciever, sender, passwd):
     message = 'Subject: {}\n\n{}'.format(Subject, Content)
 
     mail = smtplib.SMTP('smtp.gmail.com',587)
+    # mail = smtplib.SMTP('smtp.gmail.com',465)
 
     mail.ehlo()
 
     mail.starttls()
 
-    mail.login(sender,passwd)
+    success = mail.login(sender,passwd)
+    # print(success)
 
     mail.sendmail(sender,reciever,message)
 

@@ -27,6 +27,8 @@
 
 
 ## TO DO
+- Send batch email for multiple availabilities
+- PR site 012 sending false positives
 - Wrapper for checking multiple campsites
     - Run main multiple times
     - Generate single summary report

@@ -272,7 +272,10 @@ def GetAvailability(driver, url, start_date, end_date,
 
     # print(soup.prettify())
 
-    return soup
+    print('killing driver here')
+    driver.quit()
+
+    return soup, driver
 
 
 def ProcessAvailability(soup, length_stay,
@@ -595,7 +598,7 @@ def main(start_date, length_stay,
     # driver = GetWebDriver_Firefox(headless=headless)
 
     #SCRAPE WEB FOR CAMPSITE AVAILABILITY
-    soup = GetAvailability(driver, url, start_datetime, end_datetime,
+    soup, driver = GetAvailability(driver, url, start_datetime, end_datetime,
                             debug=debug)
     df   = ProcessAvailability(soup, length_stay,
                             preferred=preferred, blacklist=blacklist,
@@ -654,6 +657,8 @@ def main(start_date, length_stay,
     if debug:
         print('NOT CLOSING BROWSER AT END FOR DEBUGGING')
     else:
+        driver.stop_client()
+        driver.close()
         driver.quit()
 
 
@@ -672,7 +677,11 @@ if __name__ == "__main__":
     #POINT REYES
     #inputs
     start_date  = '2020-03-21'
-    start_dates  = ['2020-07-18', '2020-08-01', '2020-08-08', '2020-08-15', '2020-08-29', '2020-09-05', '2020-09-12', '2020-09-19', '2020-09-26',]
+    start_dates  = [
+            # '2020-07-18', '2020-08-01', '2020-08-08', '2020-08-15', '2020-08-29',
+            '2020-09-05', '2020-09-12', '2020-09-19', '2020-09-26',
+            '2020-10-03', '2020-10-10', '2020-10-17', '2020-10-24',
+            ]
     length_stay = 1
     # URL = '{}/{}'.format(urls['recreation.gov'], campIDs['pointreyes'])
     Campground = 'pointreyes'
@@ -684,6 +693,7 @@ if __name__ == "__main__":
                     'BOAT B',
                     'MARSHALL BEACH GROUP',
                     'TOMALES BEACH GROUP',
+                    '012', #this one is falsely indicating as vacant when it's not
                 ]
 
 
